@@ -167,9 +167,15 @@ class Geo_Heading_Widget extends \Elementor\Widget_Base
     protected function render()
     {
         $settings = $this->get_settings_for_display();
-        $current_geo = isset($_COOKIE['GEO']) ? strtolower($_COOKIE['GEO']) : 'default';
+
+        // Get the default location code
+        $default_location_code = $this->get_default_location_code();
+
+        // If no cookie is set, use the default location code
+        $current_geo = isset($_COOKIE['GEO']) ? strtolower($_COOKIE['GEO']) : $default_location_code;
 
         $heading_text = '';
+        // First try to find a heading for the current geo
         foreach ($settings['headings_list'] as $heading) {
             if (strtolower($heading['geo_location']) === $current_geo) {
                 $heading_text = $heading['heading_text'];
@@ -177,20 +183,37 @@ class Geo_Heading_Widget extends \Elementor\Widget_Base
             }
         }
 
-        // If no matching geo found, use default
+        // If no matching geo found, use the heading for the default location
         if (empty($heading_text)) {
             foreach ($settings['headings_list'] as $heading) {
-                if ($heading['geo_location'] === 'default') {
+                if (strtolower($heading['geo_location']) === $default_location_code) {
                     $heading_text = $heading['heading_text'];
                     break;
                 }
             }
         }
 
+        // Final fallback
         if (empty($heading_text)) {
             $heading_text = esc_html__('Default Heading', 'geo-dynamic-headings');
         }
 
         printf('<h2 class="geo-heading">%s</h2>', esc_html($heading_text));
+    }
+
+    private function get_default_location_code()
+    {
+        $locations = get_option('gdh_locations');
+        if (!empty($locations['locations'])) {
+            // First try to find the explicitly set default location
+            foreach ($locations['locations'] as $location) {
+                if (isset($location['is_default']) && $location['is_default'] === '1') {
+                    return $location['code'];
+                }
+            }
+            // If no explicit default, return the first location's code
+            return $locations['locations'][0]['code'];
+        }
+        return 'en-us'; // Fallback to en-us if no locations are set
     }
 }

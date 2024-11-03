@@ -130,7 +130,12 @@ class Geo_Selector_Widget extends \Elementor\Widget_Base
     protected function render()
     {
         $settings = $this->get_settings_for_display();
-        $current_geo = isset($_COOKIE['GEO']) ? strtolower($_COOKIE['GEO']) : 'default';
+
+        // Get the default location code
+        $default_location_code = $this->get_default_location_code();
+
+        // If no cookie is set, use the default location code
+        $current_geo = isset($_COOKIE['GEO']) ? strtolower($_COOKIE['GEO']) : $default_location_code;
 
         $locations = GeoDynamicHeadings::get_locations();
 
@@ -163,5 +168,21 @@ class Geo_Selector_Widget extends \Elementor\Widget_Base
         }
 
         echo '</div>';
+    }
+
+    private function get_default_location_code()
+    {
+        $locations = get_option('gdh_locations');
+        if (!empty($locations['locations'])) {
+            // First try to find the explicitly set default location
+            foreach ($locations['locations'] as $location) {
+                if (isset($location['is_default']) && $location['is_default'] === '1') {
+                    return $location['code'];
+                }
+            }
+            // If no explicit default, return the first location's code
+            return $locations['locations'][0]['code'];
+        }
+        return 'en-us'; // Fallback to en-us if no locations are set
     }
 }

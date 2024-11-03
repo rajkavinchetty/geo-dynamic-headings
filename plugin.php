@@ -127,13 +127,25 @@ class GeoDynamicHeadings
         $formatted_locations = array();
 
         if (!empty($locations['locations'])) {
+            // First find the default location
+            $default_location = null;
+            foreach ($locations['locations'] as $location) {
+                if (isset($location['is_default']) && $location['is_default'] === '1') {
+                    $default_location = $location;
+                    break;
+                }
+            }
+
+            // If no explicit default is set, use the first location
+            if (!$default_location && !empty($locations['locations'])) {
+                $default_location = reset($locations['locations']);
+            }
+
+            // Add locations to the formatted array
             foreach ($locations['locations'] as $location) {
                 $formatted_locations[$location['code']] = $location['name'];
             }
         }
-
-        // Always include default
-        $formatted_locations['default'] = __('Default', 'geo-dynamic-headings');
 
         return $formatted_locations;
     }
