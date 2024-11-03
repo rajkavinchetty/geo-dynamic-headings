@@ -30,6 +30,20 @@ class Geo_Heading_Widget extends \Elementor\Widget_Base
         return ['heading', 'geo', 'location', 'dynamic'];
     }
 
+    private function get_location_options()
+    {
+        $locations = get_option('gdh_locations');
+        $options = [];
+
+        if (!empty($locations['locations'])) {
+            foreach ($locations['locations'] as $location) {
+                $options[$location['code']] = $location['name'];
+            }
+        }
+
+        return $options;
+    }
+
     protected function register_controls()
     {
         $this->start_controls_section(
@@ -47,13 +61,8 @@ class Geo_Heading_Widget extends \Elementor\Widget_Base
             [
                 'label' => esc_html__('Geo Location', 'geo-dynamic-headings'),
                 'type' => \Elementor\Controls_Manager::SELECT,
-                'options' => [
-                    'canada' => esc_html__('Canada', 'geo-dynamic-headings'),
-                    'india' => esc_html__('India', 'geo-dynamic-headings'),
-                    'usa' => esc_html__('USA', 'geo-dynamic-headings'),
-                    'default' => esc_html__('Default', 'geo-dynamic-headings'),
-                ],
-                'default' => 'default',
+                'options' => $this->get_location_options(),
+                'default' => $this->get_default_location_code(),
             ]
         );
 
@@ -75,33 +84,11 @@ class Geo_Heading_Widget extends \Elementor\Widget_Base
                 'fields' => $repeater->get_controls(),
                 'default' => [
                     [
-                        'geo_location' => 'canada',
-                        'heading_text' => esc_html__('Best Web Hosting in Canada', 'geo-dynamic-headings'),
-                    ],
-                    [
-                        'geo_location' => 'india',
-                        'heading_text' => esc_html__('Best Indian Web Hosting', 'geo-dynamic-headings'),
-                    ],
-                    [
-                        'geo_location' => 'usa',
-                        'heading_text' => esc_html__("USA's Finest Hosting", 'geo-dynamic-headings'),
-                    ],
-                    [
-                        'geo_location' => 'default',
-                        'heading_text' => esc_html__('Best Web Hosting Services', 'geo-dynamic-headings'),
+                        'geo_location' => $this->get_default_location_code(),
+                        'heading_text' => esc_html__('Default Heading', 'geo-dynamic-headings'),
                     ],
                 ],
                 'title_field' => '{{{ geo_location }}}: {{{ heading_text }}}',
-            ]
-        );
-
-        $repeater->add_control(
-            'geo_location',
-            [
-                'label' => esc_html__('Geo Location', 'geo-dynamic-headings'),
-                'type' => \Elementor\Controls_Manager::SELECT,
-                'options' => GeoDynamicHeadings::get_locations(),
-                'default' => 'default',
             ]
         );
 
@@ -198,7 +185,7 @@ class Geo_Heading_Widget extends \Elementor\Widget_Base
             $heading_text = esc_html__('Default Heading', 'geo-dynamic-headings');
         }
 
-        printf('<h2 class="geo-heading">%s</h2>', esc_html($heading_text));
+        printf('<h2 class="geo-heading">' . $heading_text . '</h2>');
     }
 
     private function get_default_location_code()
