@@ -4,7 +4,7 @@
  * Plugin Name: Geo Dynamic Headings for Elementor
  * Description: Displays different heading text based on geo location cookies
  * Version: 1.0
- * Author: Your Name
+ * Author: Dr. Raj Kavin
  * Requires Elementor: 3.0.0
  */
 
